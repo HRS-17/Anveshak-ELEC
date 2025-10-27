@@ -1,3 +1,5 @@
+// SCRAP // use CAN_testwiht threading _MICROROS
+
 #include <micro_ros_arduino.h>
 
 #include <stdio.h>
