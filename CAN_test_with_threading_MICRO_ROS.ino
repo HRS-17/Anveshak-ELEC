@@ -76,7 +76,7 @@ void setup() {
     rclc_subscription_init_default(
         &subscriber, &node,
         ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Int32MultiArray),
-        "/motor_pwm");
+        "/motor_pwm_2");
 
     // Executor
     rclc_executor_init(&executor, &support.context, 1, &allocator);
