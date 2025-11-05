@@ -5,8 +5,8 @@
 #include <std_msgs/msg/int32_multi_array.h>
 #include "driver/twai.h"
 
-#define RX_PIN 2
-#define TX_PIN 1
+#define RX_PIN 25
+#define TX_PIN 26
 #define CAN_ID_PWM 0x01
 
 #define NUM_MOTORS 8
