@@ -57,7 +57,21 @@ void motor_pwm_callback(const void *msgin) {
   for (int i = 0; i < NUM_MOTORS; i++) {
     last_motor_pwm[i] = msg->data.data[i];
   }
-  new_pwm_received = true;
+    twai_message_t rx_msg;
+  if (twai_receive(&rx_msg, pdMS_TO_TICKS(1)) == ESP_OK) {
+    int index = get_encoder_index(rx_msg.identifier);
+    if (index != -1) {
+      // Extract 2-byte encoder value
+      int16_t enc_raw = 0;
+      memcpy(&enc_raw, rx_msg.data, sizeof(int16_t));
+      enc_data_array[index] = (float)enc_raw;
+      enc_received_flags[index] = true;
+
+      Serial.printf("[RX] ID: 0x%X | Encoder[%d]: %d\n",
+                    rx_msg.identifier, index, enc_raw);
+    }
+  }
+
 }
 
 // ---------------- Setup ----------------
@@ -131,45 +145,6 @@ void loop() {
   rclc_executor_spin_some(&executor, RCL_MS_TO_NS(10));
 
   // --- Send PWM over CAN when received ---
-  if (new_pwm_received) {
-    twai_message_t tx_msg = {};
-    tx_msg.identifier = CAN_ID_PWM;
-    tx_msg.extd = 0;
-    tx_msg.data_length_code = NUM_MOTORS;
-
-    for (int i = 0; i < NUM_MOTORS; i++) {
-      tx_msg.data[i] = (uint8_t)last_motor_pwm[i];
-    }
-
-    if (twai_transmit(&tx_msg, pdMS_TO_TICKS(10)) == ESP_OK) {
-      Serial.print("[TX] PWM: ");
-      for (int i = 0; i < NUM_MOTORS; i++) {
-        Serial.print(tx_msg.data[i]);
-        Serial.print(" ");
-      }
-      Serial.println();
-    } else {
-      Serial.println("Failed to send CAN message");
-    }
-
-    new_pwm_received = false;
-  }
-
-  // --- Read encoder data from CAN ---
-  twai_message_t rx_msg;
-  if (twai_receive(&rx_msg, pdMS_TO_TICKS(1)) == ESP_OK) {
-    int index = get_encoder_index(rx_msg.identifier);
-    if (index != -1) {
-      // Extract 2-byte encoder value
-      int16_t enc_raw = 0;
-      memcpy(&enc_raw, rx_msg.data, sizeof(int16_t));
-      enc_data_array[index] = (float)enc_raw;
-      enc_received_flags[index] = true;
-
-      Serial.printf("[RX] ID: 0x%X | Encoder[%d]: %d\n",
-                    rx_msg.identifier, index, enc_raw);
-    }
-  }
 
   // --- Check if all encoders received once ---
   bool all_received = true;
@@ -200,5 +175,31 @@ void loop() {
     }
   }
 
-  delay(1);
+  new_pwm_received = true;
+  if (new_pwm_received) {
+    twai_message_t tx_msg = {};
+    tx_msg.identifier = CAN_ID_PWM;
+    tx_msg.extd = 0;
+    tx_msg.data_length_code = NUM_MOTORS;
+
+    for (int i = 0; i < NUM_MOTORS; i++) {
+      tx_msg.data[i] = (uint8_t)last_motor_pwm[i];
+    }
+
+    if (twai_transmit(&tx_msg, pdMS_TO_TICKS(10)) == ESP_OK) {
+      Serial.print("[TX] PWM: ");
+      for (int i = 0; i < NUM_MOTORS; i++) {
+        Serial.print(tx_msg.data[i]);
+        Serial.print(" ");
+      }
+      Serial.println();
+    } else {
+      Serial.println("Failed to send CAN message");
+    }
+
+    new_pwm_received = false;
+  }
+
+  // --- Read encoder data from CAN ---
+
 }
