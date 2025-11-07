@@ -10,13 +10,12 @@
 #define TX_PIN 26
 #define CAN_ID_PWM 0x01
 
-#define CAN_ID_ENC1 0x17
-#define CAN_ID_ENC2 0x18
-#define CAN_ID_ENC3 0x19
-#define CAN_ID_ENC4 0x1A
+#define CAN_ID_ENC1 0x1B
+#define CAN_ID_ENC2 0x1C
+
 
 #define NUM_MOTORS 8
-#define NUM_ENCODERS 4
+#define NUM_ENCODERS 2
 
 // ---------------- ROS Entities ----------------
 rcl_subscription_t subscriber;
@@ -38,8 +37,6 @@ int get_encoder_index(uint32_t id) {
   switch (id) {
     case CAN_ID_ENC1: return 0;
     case CAN_ID_ENC2: return 1;
-    case CAN_ID_ENC3: return 2;
-    case CAN_ID_ENC4: return 3;
     default: return -1;
   }
 }
