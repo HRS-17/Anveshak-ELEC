@@ -1,3 +1,5 @@
+
+
 #include <micro_ros_arduino.h>
 #include <rcl/rcl.h>
 #include <rcl/error_handling.h>
@@ -20,24 +22,37 @@
 rcl_subscription_t subscriber;
 std_msgs__msg__Int32MultiArray pwm_int;  
 
+rcl_publisher_t publisher;
+std_msgs__msg__Float32MultiArray enc_msg;  
+
 rclc_executor_t executor;
 rclc_support_t support;
 rcl_allocator_t allocator;
 rcl_node_t node;
 rcl_timer_t timer;
 
+// Encoder variables with interrupt protection
+volatile long enc_pos[NUM_ENC] = {0};
+volatile bool A_set[NUM_ENC] = {false};
+volatile bool B_set[NUM_ENC] = {false};
+volatile bool enc_updated = false;
 
 // Motor pin configurations
 int PWMpin[NUM_MOTORS] = {4, 6, 16, 18, 9, 11};
 int dirpin[NUM_MOTORS] = {5, 7, 15, 17, 8, 10};
 int defaultdir[NUM_MOTORS] = {1, 1, 1, 1, 1, 1};
 
+// ESP32-S3 encoder pins
+int encB[NUM_ENC] = {42, 38, 47};
+int encA[NUM_ENC] = {41, 37, 21};
 
 // Data buffers
 int pwm_int_buffer[NUM_MOTORS] = {0};
-
+float enc_feed[NUM_ENC] = {0};
 int32_t pwm_data_array[NUM_MOTORS] = {0};  // Static array for subscriber
 
+// Conversion factor - adjust based on your encoder specifications
+const float ENC_TO_DEGREES = 90.0 / 55157.0;
 
 // Safety limits
 const int MIN_PWM = -MAX_PWM_VALUE;
@@ -139,5 +154,3 @@ void setup() {
 void loop() {
   RCCHECK(rclc_executor_spin_some(&executor, RCL_MS_TO_NS(10)));
 }
-
-
