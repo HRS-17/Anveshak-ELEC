@@ -55,7 +55,7 @@ ads_readings_t adc_readings = {0};
 float cell_voltages[12] = {0.0f};
 
 void setup() {
-  Serial.begin(115200);       // ✅ Serial debug at 115200 baud
+  Serial.begin(115200);      
   Wire.begin(SDA_PIN, SCL_PIN);
   delay(100);
 
