@@ -1,3 +1,28 @@
+/**
+ * ============================================================================
+ * @brief   ESP32 CAN-Based 12-Cell Battery Voltage Monitor
+ * 
+ * @details 
+ * This firmware monitors a multi-cell battery pack (24V configuration) 
+ * and broadcasts individual cell voltages over a CAN bus network. 
+ * 
+ * System Workflow & Architecture:
+ * 1. Hardware Setup: Interfaces with 3x ADS1115 ADCs connected to the ESP32 
+ *    via I2C, allowing up to 12 total voltage measurements.
+ * 2. Data Storage: Utilizes a dedicated data structure to efficiently store 
+ *    the raw cumulative voltage readings from all ADCs.
+ * 3. Initialization: Configures and initializes the I2C bus for sensor 
+ *    communication and the TWAI (CAN) driver for network transmission.
+ * 4. Read & Scale: Retrieves raw 16-bit ADC values and scales them to actual 
+ *    real-world voltages, accounting for a physical 11:1 resistor divider.
+ * 5. Value Translation: Converts the cumulative series voltages (taps) into 
+ *    isolated, individual cell voltages using subtraction and sanitizes 
+ *    the data for hardware faults.
+ * 6. CAN Transmission: Scales the floating-point voltages into 16-bit 
+ *    integers and packages them into standard 8-byte CAN frames for broadcast.
+ * ============================================================================
+ */
+
 #include <Wire.h>
 #include <Adafruit_ADS1X15.h>
 #include "driver/twai.h"
